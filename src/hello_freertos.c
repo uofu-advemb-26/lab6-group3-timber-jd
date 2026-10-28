@@ -69,7 +69,7 @@ int main( void )
 {
     stdio_init_all();
     sleep_ms(5000); 
-    semaphore = xSemaphoreCreateBinary();
+    semaphore = xSemaphoreCreateMutex();
     xSemaphoreGive(semaphore);
     
     xTaskCreate(supervisor_task, "supervisor",
