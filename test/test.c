@@ -4,6 +4,46 @@
 #include <unity.h>
 #include "unity_config.h"
 
+#include <FreeRTOS.h>
+#include "task.h"
+#include <pico/time.h>
+
+// Priorities used from reference solution.
+#define LOW_PRIORITY ( tskIDLE_PRIORITY + 1UL )
+#define HIGH_PRIORITY ( tskIDLE_PRIORITY + 2UL )
+#define SUPERVISOR_PRIORITY ( tskIDLE_PRIORITY + 3UL )
+
+void busy_busy(void)
+{
+    for (int i = 0; ; i++);
+}
+
+void busy_yield(void)
+{
+    for (int i = 0; ; i++) {
+        taskYIELD();
+    }
+}
+
+void timeTasks(TaskFunction_t task1, UBaseType_t task1Priority, uint64_t *task1Time,
+            TaskFunction_t task2, UBaseType_t task2Priority,  uint64_t *task2Time,
+            uint64_t task12_delayMs ) {
+    
+    TaskHandle_t task1Handle, task2Handle;
+
+    xTaskCreate(task1, "Task1", configMINIMAL_STACK_SIZE, NULL, task1Priority, &task1Handle);
+    vTaskDelay(pdMS_TO_TICKS(task12_delayMs));
+    xTaskCreate(task2, "Task2", configMINIMAL_STACK_SIZE, NULL, task2Priority, &task2Handle);
+    
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    *task1Time = ulTaskGetRunTimeCounter(task1Handle);
+    *task2Time = ulTaskGetRunTimeCounter(task2Handle);
+
+    vTaskDelete(task1Handle);
+    vTaskDelete(task2Handle);
+}
+
 void setUp(void) {}
 
 void tearDown(void) {}
