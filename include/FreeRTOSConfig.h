@@ -8,6 +8,10 @@
 #define configGENERATE_RUN_TIME_STATS           1
 #define configRUN_TIME_COUNTER_TYPE uint64_t
 
+#ifndef __ASSEMBLER__
+#include "hardware/timer.h"
+#endif
+
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()    /* no-op */
 #define portGET_RUN_TIME_COUNTER_VALUE()            time_us_64()
 
