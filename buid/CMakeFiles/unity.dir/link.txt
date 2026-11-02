@@ -1,2 +1,0 @@
-/opt/homebrew/bin/arm-none-eabi-ar qc libunity.a CMakeFiles/unity.dir/lib/unity/src/unity.c.o
-/opt/homebrew/bin/arm-none-eabi-ranlib libunity.a
