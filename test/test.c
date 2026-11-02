@@ -25,8 +25,8 @@ void busy_yield()
     }
 }
 
-void timeTasks(TaskFunction_t task1, UBaseType_t task1Priority, uint64_t *task1Time,
-            TaskFunction_t task2, UBaseType_t task2Priority,  uint64_t *task2Time,
+void timeTasks(TaskFunction_t task1, UBaseType_t task1Priority, uint64_t *task1TimeMs,
+            TaskFunction_t task2, UBaseType_t task2Priority,  uint64_t *task2TimeMs,
             uint64_t task12_delayMs ) {
     
     TaskHandle_t task1Handle, task2Handle;
@@ -37,52 +37,64 @@ void timeTasks(TaskFunction_t task1, UBaseType_t task1Priority, uint64_t *task1T
 
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    *task1Time = ulTaskGetRunTimeCounter(task1Handle);
-    *task2Time = ulTaskGetRunTimeCounter(task2Handle);
+    *task1TimeMs = ulTaskGetRunTimeCounter(task1Handle) / 1000;
+    *task2TimeMs = ulTaskGetRunTimeCounter(task2Handle) / 1000;
 
     vTaskDelete(task1Handle);
     vTaskDelete(task2Handle);
 }
 
 void print_task_times(uint64_t t1_time, uint64_t t2_time) {
-    printf("Task 1 time: %llu\n", t1_time);
-    printf("Task 2 time: %llu\n", t2_time);
+    printf("Task 1 time: %llu ms\n", t1_time);
+    printf("Task 2 time: %llu ms\n", t2_time);
 }
 
 void both_busy_busy(void) {
     uint64_t t1_time = 0, t2_time = 0;
     timeTasks(busy_busy, LOW_PRIORITY, &t1_time, busy_busy, LOW_PRIORITY, &t2_time, 0);
     print_task_times(t1_time, t2_time);
+    TEST_ASSERT(t1_time > 400 && t1_time < 600);
+    TEST_ASSERT(t2_time > 400 && t2_time < 600);
 }
 
 void both_busy_yield(void) {
     uint64_t t1_time = 0, t2_time = 0;
     timeTasks(busy_yield, LOW_PRIORITY, &t1_time, busy_yield, LOW_PRIORITY, &t2_time, 0);
     print_task_times(t1_time, t2_time);
+    TEST_ASSERT(t1_time > 400 && t1_time < 600);
+    TEST_ASSERT(t2_time > 400 && t2_time < 600);
 }
 
 void t1_busy_t2_yield(void) {
     uint64_t t1_time = 0, t2_time = 0;
     timeTasks(busy_busy, LOW_PRIORITY, &t1_time, busy_yield, LOW_PRIORITY, &t2_time, 0);
     print_task_times(t1_time, t2_time);
+    TEST_ASSERT(t1_time > 900);
+    TEST_ASSERT(t2_time < 100);
 }
 
 void high_priority_first(void) {
     uint64_t t1_time = 0, t2_time = 0;
     timeTasks(busy_busy, HIGH_PRIORITY, &t1_time, busy_busy, LOW_PRIORITY, &t2_time, 100);
     print_task_times(t1_time, t2_time);
+    TEST_ASSERT(t1_time > 900);
+    TEST_ASSERT(t2_time == 0);
 }
 
 void low_priority_first(void) {
     uint64_t t1_time = 0, t2_time = 0;
     timeTasks(busy_busy, LOW_PRIORITY, &t1_time, busy_busy, HIGH_PRIORITY, &t2_time, 100);
     print_task_times(t1_time, t2_time);
+    TEST_ASSERT(t1_time < 100);
+    TEST_ASSERT(t2_time > 900);
 }
 
 void busy_yield_different_priorities(void) {
     uint64_t t1_time = 0, t2_time = 0;
     timeTasks(busy_yield, HIGH_PRIORITY, &t1_time, busy_yield, LOW_PRIORITY, &t2_time, 0);
     print_task_times(t1_time, t2_time);
+    TEST_ASSERT(t1_time > 900);
+    TEST_ASSERT(t2_time == 0);
 }
 
 
@@ -90,20 +102,6 @@ void busy_yield_different_priorities(void) {
 void setUp(void) {}
 
 void tearDown(void) {}
-
-// void test_variable_assignment()
-// {
-//     int x = 1;
-//     TEST_ASSERT_TRUE_MESSAGE(x == 1,"Variable assignment failed.");
-// }
-
-// void test_multiplication(void)
-// {
-//     int x = 30;
-//     int y = 6;
-//     int z = x / y;
-//     TEST_ASSERT_TRUE_MESSAGE(z == 5, "Multiplication of two integers returned incorrect value.");
-// }
 
 void test_supervisor(__unused void *params) {   
     while(1) {
