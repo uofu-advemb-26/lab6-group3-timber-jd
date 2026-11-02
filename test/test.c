@@ -13,12 +13,12 @@
 #define HIGH_PRIORITY ( tskIDLE_PRIORITY + 2UL )
 #define SUPERVISOR_PRIORITY ( tskIDLE_PRIORITY + 3UL )
 
-void busy_busy(void)
+void busy_busy()
 {
     for (int i = 0; ; i++);
 }
 
-void busy_yield(void)
+void busy_yield()
 {
     for (int i = 0; ; i++) {
         taskYIELD();
@@ -34,7 +34,7 @@ void timeTasks(TaskFunction_t task1, UBaseType_t task1Priority, uint64_t *task1T
     xTaskCreate(task1, "Task1", configMINIMAL_STACK_SIZE, NULL, task1Priority, &task1Handle);
     vTaskDelay(pdMS_TO_TICKS(task12_delayMs));
     xTaskCreate(task2, "Task2", configMINIMAL_STACK_SIZE, NULL, task2Priority, &task2Handle);
-    
+
     vTaskDelay(pdMS_TO_TICKS(1000));
 
     *task1Time = ulTaskGetRunTimeCounter(task1Handle);
@@ -87,9 +87,9 @@ void busy_yield_different_priorities(void) {
 
 
 
-// void setUp(void) {}
+void setUp(void) {}
 
-// void tearDown(void) {}
+void tearDown(void) {}
 
 // void test_variable_assignment()
 // {
